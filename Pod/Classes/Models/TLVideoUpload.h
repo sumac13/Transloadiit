@@ -7,7 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "TLUpload.h"
+#import "TLVideoMetadata.h"
 
-@interface TLVideoUpload : NSObject
+@interface TLVideoUpload : TLUpload
+
+@property (nonatomic, readonly) TLVideoMetadata *metadata;
 
 @end

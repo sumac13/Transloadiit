@@ -29,5 +29,6 @@
     "ReactiveCocoa": [
 
     ]
-  }
+  },
+  "frameworks": "CoreLocation"
 }

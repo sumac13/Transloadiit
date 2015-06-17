@@ -28,6 +28,7 @@
 
 - (void)setAttributesFromDictionary:(NSDictionary*)dictionary
 {
+    self.responseDict = dictionary;
     if (dictionary[@"ok"]) [self setStatusFromString:dictionary[@"ok"]];
     if (dictionary[@"error"]) [self setErrorFromString:dictionary[@"error"]];
     if (dictionary[@"message"]) self.message = dictionary[@"message"];

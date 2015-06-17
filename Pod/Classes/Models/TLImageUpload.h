@@ -7,7 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "TLUpload.h"
+#import "TLImageMetadata.h"
 
-@interface TLImageUpload : NSObject
+@interface TLImageUpload : TLUpload
+
+@property (nonatomic, readonly) TLImageMetadata *metadata;
 
 @end

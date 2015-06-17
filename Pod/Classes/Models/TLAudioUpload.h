@@ -7,7 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "TLUpload.h"
+#import "TLAudioMetadata.h"
 
-@interface TLAudioUpload : NSObject
+@interface TLAudioUpload : TLUpload
+
+@property (nonatomic, readonly) TLAudioMetadata *metadata;
 
 @end

@@ -80,6 +80,7 @@ typedef NS_ENUM(NSUInteger, TLResponseError) {
 
 - (id)initWithDictionary:(NSDictionary*)dictionary;
 
+@property (nonatomic, strong) NSDictionary *responseDict;
 @property (nonatomic, assign) TLResponseStatus status;
 @property (nonatomic, assign) TLResponseError error;
 @property (nonatomic, strong) NSString *message;
