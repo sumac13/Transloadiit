@@ -1,0 +1,6 @@
+framework module Transloadiit {
+  umbrella header "Pods-Transloadiit_Tests-Transloadiit-umbrella.h"
+
+  export *
+  module * { export * }
+}

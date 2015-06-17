@@ -1,0 +1,20 @@
+PODS:
+  - Expecta (1.0.0)
+  - Specta (1.0.2)
+  - Transloadiit (0.1.0)
+
+DEPENDENCIES:
+  - Expecta
+  - Specta
+  - Transloadiit (from `../`)
+
+EXTERNAL SOURCES:
+  Transloadiit:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Expecta: 32604574add2c46a36f8d2f716b6c5736eb75024
+  Specta: 9cec98310dca411f7c7ffd6943552b501622abfe
+  Transloadiit: dc3b03731bd83e8b836b9ecf399775bd44930e1c
+
+COCOAPODS: 0.37.2
