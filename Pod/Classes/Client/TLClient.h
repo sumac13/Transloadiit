@@ -7,9 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "TLResponse.h"
 
 @interface TLClient : NSObject
 
+// Constructors
 - (id)initWithAuthKey:(NSString*)key authSecret:(NSString*)secret;
+- (id)initWithAuthKey:(NSString*)key authSecret:(NSString*)secret useSignature:(BOOL)useSignature;
+
 
 @end

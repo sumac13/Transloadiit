@@ -12,9 +12,22 @@
 
 + (NSDate*)dateFromTransloaditString:(NSString*)dateString
 {
+    return [[self formatter] dateFromString:dateString];
+}
+
++ (NSString*)transloaditDateStringFromDate:(NSDate*)date
+{
+    return [[self formatter] stringFromDate:date];
+}
+
+
+#pragma mark - Helper
+
++ (NSDateFormatter*)formatter
+{
     NSDateFormatter *formatter = [NSDateFormatter new];
     [formatter setDateFormat:@"yyyy/MM/dd HH:mm:ssZZZZ"];
-    return [formatter dateFromString:dateString];
+    return formatter;
 }
 
 @end

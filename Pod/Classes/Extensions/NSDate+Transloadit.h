@@ -11,5 +11,6 @@
 @interface NSDate (Transloadit)
 
 + (NSDate*)dateFromTransloaditString:(NSString*)dateString;
++ (NSString*)transloaditDateStringFromDate:(NSDate*)date;
 
 @end

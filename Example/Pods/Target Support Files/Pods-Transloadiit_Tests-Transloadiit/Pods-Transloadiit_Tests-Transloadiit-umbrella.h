@@ -7,6 +7,7 @@
 #import "TLImageMetadata.h"
 #import "TLImageUpload.h"
 #import "TLResponse.h"
+#import "TLTemplate.h"
 #import "TLUpload.h"
 #import "TLVideoMetadata.h"
 #import "TLVideoUpload.h"
