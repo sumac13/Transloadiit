@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 typedef NS_ENUM(NSUInteger, TLResponseStatus) {
+    TLResponseStatusUnknown,
     TLResponseStatusRequestAborted,
     TLResponseStatusAssemblyUploading,
     TLResponseStatusAssemblyExecuting,
@@ -66,6 +67,7 @@ typedef NS_ENUM(NSUInteger, TLResponseError) {
     TLResponseErrorVideoEncodeInvalidWatermarkPosition,
     TLResponseErrorImportFileError,
     TLResponseErrorCloudFilesStoreAccessDenied,
+    TLResponseErrorCloudFilesStoreError,
     TLResponseErrorFileFilterInvalidOperator,
     TLResponseErrorFileFilterDeclinedFile,
     TLResponseErrorImageResizeInvalidWatermarkPosition,
