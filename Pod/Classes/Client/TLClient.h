@@ -16,35 +16,39 @@ typedef NS_ENUM(NSUInteger, TLOrder) {
     TLOrderDescendent
 };
 
+#define defend(b) b = (id)b ?: (id)^{}
 
 @interface TLClient : NSObject
 
 // Constructors
+
 - (id)initWithAuthKey:(NSString*)key authSecret:(NSString*)secret;
 - (id)initWithAuthKey:(NSString*)key authSecret:(NSString*)secret useSignature:(BOOL)useSignature;
 
 // Reactive
+
 - (RACSignal*)rac_createTemplateWithName:(NSString*)name template:(NSDictionary*)temp; // TLTemplate / Errror
 - (RACSignal*)rac_updateTemplateWithId:(NSString*)identifier name:(NSString*)name template:(NSDictionary*)temp; // TLTemplate / Error
 - (RACSignal*)deleteTemplateWithId:(NSString*)identifier; // Error / Completion
 - (RACSignal*)rac_getTemplateDetailWithId:(NSString*)identifier; // TLTemplate / Error
 - (RACSignal*)rac_getTemplatesSortedBy:(NSString*)sorted order:(TLOrder)order page:(int)page pageSize:(int)pageSize fromDate:(NSDate*)from toDate:(NSDate*)to;
-- (RACSignal*)getTemplatesFromPage;
+- (RACSignal*)rac_getAllTemplates;
+- (RACSignal*)rac_getAllAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords;
+- (RACSignal*)rac_getAllAssembliesWithType:(NSArray*)type keyword:(NSArray*)keywords fromPage:(int)page pageLimit:(int)pageLimit;
+- (RACSignal*)rac_getAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords page:(int)page pageSize:(int)pageSize fromDate:(NSDate*)from toDate:(NSDate*)to;
+- (RACSignal*)rac_createAssemblyWithData:(NSData*)data name:(NSString*)name steps:(NSDictionary*)steps notifyUrl:(NSString*)notifyUrl;
+- (RACSignal*)rac_createAssemblyWithData:(NSData*)data name:(NSString*)name templateId:(NSString*)templateId;
+- (RACSignal*)rac_getAssemblyWithId:(NSString*)identifier;
+- (RACSignal*)rac_cancelAssemblyWithId:(NSString*)identifier
 
 // Blocks version
+
 - (void)createTemplateWithName:(NSString*)name template:(NSDictionary*)temp completion:(void (^)(NSError *error, TLTemplate* template))completion;
 - (void)updateTemplateWithId:(NSString*)identifier name:(NSString*)name template:(NSDictionary*)temp completion:(void (^)(NSError *error, TLTemplate* template))completion;
 - (void)deleteTemplateWithId:(NSString*)identifier completion:(void (^)(NSError *error))completion;
 - (void)getTemplateDetailWithId:(NSString*)identifier completion:(void (^)(NSError *error, TLTemplate * template))completion;
-- (void)getTemplatesWithCompletion:(void (^)(NSError *error, NSArray * templates))completion;
+- (void)getAllTemplatesWithCompletion:(void (^)(NSError *error, NSArray * templates))completion;
 - (void)getTemplatesSortedBy:(NSString*)sorted order:(TLOrder)order page:(int)page pageSize:(int)pageSize fromDate:(NSDate*)from toDate:(NSDate*)to completion:(void (^)(NSError *error, NSArray * templates))completion;
-
-// page
-// pagesize
-// sort
-// order
-// fromdate
-// todate
 
 
 

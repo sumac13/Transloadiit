@@ -15,6 +15,8 @@
 
 static NSString * const kTransloaditTemplatesPath = @"/templates";
 static NSString * const kTransloaditTemplatesDetailPath = @"/templates/%@";
+static NSString * const kTransloaditAssembliesPath = @"/assemblies";
+static NSString * const kTransloaditAssembliesDetailPath = @"/assemblies/%";
 static int kTransloaditPageLimit = 5000;
 
 @interface TLClient ()
@@ -169,9 +171,141 @@ static int kTransloaditPageLimit = 5000;
         if (from) parameters[@"fromdate"] = [formatter stringFromDate:from];
         if (to) parameters[@"todate"] = [formatter stringFromDate:to];
         [self.client GET:kTransloaditTemplatesPath parameters:[self requestParamsWithParams:parameters] success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            [subscriber sendNext:[[(NSArray*)responseObject rac_sequence] map:^TLTemplate*(NSDictionary* dict) {
-                return [[TLTemplate alloc] initWithDictionary:dict];
-            }]];
+            if ([responseObject isKindOfClass:[NSDictionary class]]) {
+                [subscriber sendError:[NSError errorWithDomain:@"transloadit.error" code:-1 userInfo:nil]];
+            }
+            else if ([responseObject isKindOfClass:[NSArray class]]){
+                [subscriber sendNext:[[(NSArray*)responseObject rac_sequence] map:^TLTemplate*(NSDictionary* dict) {
+                    return [[TLTemplate alloc] initWithDictionary:dict];
+                }].array];
+                [subscriber sendCompleted];
+            }
+            else {
+                [subscriber sendError:[NSError errorWithDomain:@"format.unrecognized" code:-1 userInfo:nil]];
+            }
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            [subscriber sendError:error];
+        }];
+        return nil;
+    }];
+}
+
+- (RACSignal*)rac_getAllTemplates
+{
+    @weakify(self);
+    return [self paginatedSignalWithInitialPage:0 pageLimit:kTransloaditPageLimit requestSignal:^RACSignal *(int page) {
+        @strongify(self);
+        return [self rac_getTemplatesSortedBy:nil order:TLOrderAscendent page:page pageSize:kTransloaditPageLimit fromDate:nil toDate:nil];
+    }];
+}
+
+- (RACSignal*)rac_getAllAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords
+{
+    return [self rac_getAllAssembliesWithType:type keyword:keywords fromPage:0 pageLimit:kTransloaditPageLimit];
+}
+
+- (RACSignal*)rac_getAllAssembliesWithType:(NSArray*)type keyword:(NSArray*)keywords fromPage:(int)page pageLimit:(int)pageLimit
+{
+    @weakify(self);
+    return [self paginatedSignalWithInitialPage:0 pageLimit:kTransloaditPageLimit requestSignal:^RACSignal *(int page) {
+        @strongify(self);
+        return [self rac_getAssembliesWithType:type keywords:keywords page:page pageSize:kTransloaditPageLimit fromDate:nil toDate:nil];
+    }];
+}
+
+- (RACSignal*)rac_getAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords page:(int)page pageSize:(int)pageSize fromDate:(NSDate*)from toDate:(NSDate*)to
+{
+    @weakify(self);
+    return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+        @strongify(self);
+        NSMutableDictionary *parameters = [NSMutableDictionary new];
+        parameters[@"page"] = @(page);
+        parameters[@"pagesize"] = @(pageSize);
+        if (type) parameters[@"type"] = type;
+        if (keywords) parameters[@"keywords"] = keywords;
+        NSDateFormatter *formatter = [NSDateFormatter new];
+        [formatter setDateFormat:@"YYYY-MM-dd HH:mm:ss"];
+        if (from) parameters[@"fromdate"] = [formatter stringFromDate:from];
+        if (to) parameters[@"todate"] = [formatter stringFromDate:to];
+        [self.client GET:kTransloaditAssembliesPath parameters:[self requestParamsWithParams:parameters] success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            if ([responseObject isKindOfClass:[NSDictionary class]]) {
+                [subscriber sendError:[NSError errorWithDomain:@"transloadit.error" code:-1 userInfo:nil]];
+            }
+            else if ([responseObject isKindOfClass:[NSArray class]]) {
+                [subscriber sendNext:[[(NSArray*)responseObject rac_sequence] map:^TLResponse*(NSDictionary* dict) {
+                    return [[TLResponse alloc] initWithDictionary:dict];
+                }].array];
+                [subscriber sendCompleted];
+                [subscriber sendCompleted];
+            }
+            else {
+                [subscriber sendError:[NSError errorWithDomain:@"format.unrecognized" code:-1 userInfo:nil]];
+            }
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            [subscriber sendError:error];
+        }];
+        return nil;
+    }];
+}
+
+- (RACSignal*)rac_createAssemblyWithData:(NSData*)data name:(NSString*)name steps:(NSDictionary*)steps notifyUrl:(NSString*)notifyUrl
+{
+    return [self rac_createAssemblyWithData:data name:name params:@{@"steps": [NSString jsonStringFromDictionary:steps]}];
+}
+
+- (RACSignal*)rac_createAssemblyWithData:(NSData*)data name:(NSString*)name templateId:(NSString*)templateId
+{
+    return [self rac_createAssemblyWithData:data name:name params:@{@"template_id": templateId}];
+}
+
+- (RACSignal*)rac_createAssemblyWithData:(NSData*)data name:(NSString*)name params:(NSDictionary*)params
+{
+    @weakify(self);
+    
+    void (^checkStatus)(TLResponse*, id<RACSubscriber>);
+    checkStatus = ^void(TLResponse* response, id<RACSubscriber> subscriber) {
+        @strongify(self);
+        if (response.status == TLResponseStatusAssemblyCanceled) {
+            [subscriber sendError:[NSError errorWithDomain:@"transloadit.cancelled" code:-1 userInfo:nil]];
+        }
+        else if (response.status == TLResponseStatusRequestAborted) {
+            [subscriber sendError:[NSError errorWithDomain:@"transloadit.aborted" code:-1 userInfo:nil]];
+        }
+        else if (response.status == TLResponseStatusAssemblyExecuting ||
+                 response.status == TLResponseStatusAssemblyUploading) {
+            [[self rac_getAssemblyWithId:response.assemblyId] subscribeNext:^(TLResponse *response) {
+                checkStatus(response, subscriber);
+            } error:^(NSError *error) {
+                [subscriber sendError:nil];
+            }];
+        }
+        else if (response.status == TLResponseStatusAssemblyCompleted) {
+            [subscriber sendCompleted];
+        }
+        else {
+            [subscriber sendError:[NSError errorWithDomain:@"transloadit.unknown" code:-1 userInfo:nil]];
+        }
+    };
+    return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+        @strongify(self);
+        [self.client POST:kTransloaditTemplatesPath parameters:[self requestParamsWithParams:params]  constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+            [formData appendPartWithFormData:data name:name];
+        } success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            checkStatus([[TLResponse alloc] initWithDictionary:responseObject], subscriber);
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            [subscriber sendError:error];
+        }];
+        return nil;
+    }];
+}
+
+- (RACSignal*)rac_getAssemblyWithId:(NSString*)identifier
+{
+    @weakify(self);
+    return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+        @strongify(self);
+        [self.client GET:[NSString stringWithFormat:kTransloaditTemplatesDetailPath, identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            [subscriber sendNext:[[TLResponse alloc] initWithDictionary:responseObject]];
             [subscriber sendCompleted];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [subscriber sendError:error];
@@ -180,47 +314,28 @@ static int kTransloaditPageLimit = 5000;
     }];
 }
 
-- (RACSignal*)getTemplatesFromPage:(int)page pageLimit:(int)pageLimit
+- (RACSignal*)rac_cancelAssemblyWithId:(NSString*)identifier
 {
-    __block int currentPage = page;
-    RACSignal* (^nextSignal)() = ^RACSignal*() {
-        RACSignal *signal = [self rac_getTemplatesSortedBy:nil order:TLOrderAscendent page:currentPage pageSize:pageLimit fromDate:nil toDate:nil];
-        currentPage++;
-        return signal;
-    };
-    void (^ subscribeNext)(id<RACSubscriber>);
-    subscribeNext = ^void(id<RACSubscriber> subscriber) {
-        [nextSignal() subscribeNext:^(NSArray* templates) {
-            [subscriber sendNext:templates];
-            if (templates.count < pageLimit) {
-                [subscriber sendCompleted];
-            }
-            else {
-                subscribeNext(subscriber);
-            }
-        } error:^(NSError *error) {
+    @weakify(self);
+    return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+        @strongify(self);
+        [self.client DELETE:[NSString stringWithFormat:kTransloaditTemplatesDetailPath, identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            [subscriber sendNext:[[TLResponse alloc] initWithDictionary:responseObject]];
+            [subscriber sendCompleted];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [subscriber sendError:error];
         }];
-    };
-    return [[RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
-        subscribeNext(subscriber);
         return nil;
-    }] combinePreviousWithStart:[NSMutableArray new] reduce:^NSMutableArray*(NSMutableArray *previous, NSArray *templates) {
-        [previous addObjectsFromArray:templates];
-        return previous;
     }];
 }
 
-- (RACSignal*)getTemplatesFromPage
-{
-    return [self getTemplatesFromPage:0 pageLimit:kTransloaditPageLimit];
-}
 
 
-#pragma mark - Templates
+#pragma mark - Blocks
 
 - (void)createTemplateWithName:(NSString*)name template:(NSDictionary*)temp completion:(void (^)(NSError *error, TLTemplate* template))completion
 {
+    defend(completion);
     [[self rac_createTemplateWithName:name template:temp] subscribeNext:^(TLTemplate *template) {
         completion(nil, template);
     } error:^(NSError *error) {
@@ -230,6 +345,7 @@ static int kTransloaditPageLimit = 5000;
 
 - (void)updateTemplateWithId:(NSString*)identifier name:(NSString*)name template:(NSDictionary*)temp completion:(void (^)(NSError *error, TLTemplate* template))completion
 {
+    defend(completion);
     [[self rac_updateTemplateWithId:identifier name:name template:temp] subscribeNext:^(TLTemplate *template) {
         completion(nil, template);
     } error:^(NSError *error) {
@@ -239,6 +355,7 @@ static int kTransloaditPageLimit = 5000;
 
 - (void)deleteTemplateWithId:(NSString*)identifier completion:(void (^)(NSError *error))completion
 {
+    defend(completion);
     [[self rac_deleteTemplateWithId:identifier] subscribeError:^(NSError *error) {
         completion(error);
     } completed:^{
@@ -248,6 +365,7 @@ static int kTransloaditPageLimit = 5000;
 
 - (void)getTemplateDetailWithId:(NSString*)identifier completion:(void (^)(NSError *error, TLTemplate * template))completion
 {
+    defend(completion);
     [[self rac_getTemplateDetailWithId:identifier] subscribeNext:^(TLTemplate *template) {
         completion(nil, template);
     } error:^(NSError *error) {
@@ -255,16 +373,19 @@ static int kTransloaditPageLimit = 5000;
     }];
 }
 
-- (void)getTemplatesWithCompletion:(void (^)(NSError *error, NSArray * templates))completion
+- (void)getAllTemplatesWithCompletion:(void (^)(NSError *error, NSArray * templates))completion
 {
-    @weakify(self);
-   [[self rac_getTemplateDetailWithId:@"xxxxx"] then:<#^RACSignal *(void)block#>];
-    
-    
+    defend(completion);
+    [[self rac_getAllTemplates] subscribeNext:^(NSArray *templates) {
+        completion(nil, templates);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
 }
 
 - (void)getTemplatesSortedBy:(NSString*)sorted order:(TLOrder)order page:(int)page pageSize:(int)pageSize fromDate:(NSDate*)from toDate:(NSDate*)to completion:(void (^)(NSError *error, NSArray * templates))completion
 {
+    defend(completion);
     [[self rac_getTemplatesSortedBy:sorted order:order page:page pageSize:pageSize fromDate:from toDate:to] subscribeNext:^(NSArray *templates) {
         completion(nil, templates);
     } error:^(NSError *error) {
@@ -272,10 +393,12 @@ static int kTransloaditPageLimit = 5000;
     }];
 }
 
+- (void)getAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords completion:(void (^)(NSError *error, NSArray * templates))completion
+{
+    
+}
 
-#pragma mark - Assemblies
-
-- (void)getAssembliesWithCompletion:(void (^)(NSError *error, NSArray *assemblies))completion
+- (void)getAllAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords page:(int)page pageSize:(int)pageSize fromDate:(NSDate*)from toDate:(NSDate*)to completion:(void (^)(NSError *error, NSArray * templates))completion
 {
     
 }
@@ -297,6 +420,37 @@ static int kTransloaditPageLimit = 5000;
 
 
 #pragma mark - Helpers
+
+- (RACSignal*)paginatedSignalWithInitialPage:(int)initialPage pageLimit:(int)pageLimit requestSignal:(RACSignal* (^)(int page))requestSignal
+{
+    __block int currentPage = initialPage;
+    RACSignal* (^nextSignal)() = ^RACSignal*() {
+        RACSignal *signal =  requestSignal(currentPage);
+        currentPage++;
+        return signal;
+    };
+    void (^ subscribeNext)(id<RACSubscriber>);
+    subscribeNext = ^void(id<RACSubscriber> subscriber) {
+        [nextSignal() subscribeNext:^(NSArray* objects) {
+            [subscriber sendNext:objects];
+            if (objects.count < pageLimit) {
+                [subscriber sendCompleted];
+            }
+            else {
+                subscribeNext(subscriber);
+            }
+        } error:^(NSError *error) {
+            [subscriber sendError:error];
+        }];
+    };
+    return [[RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+        subscribeNext(subscriber);
+        return nil;
+    }] combinePreviousWithStart:[NSMutableArray new] reduce:^NSMutableArray*(NSMutableArray *previous, NSArray *templates) {
+        [previous addObjectsFromArray:templates];
+        return previous;
+    }];
+}
 
 - (NSString*)hashOfData:(NSString*)data withKey:(NSString*)key
 {
