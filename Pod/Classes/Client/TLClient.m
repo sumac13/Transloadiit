@@ -15,6 +15,7 @@
 
 static NSString * const kTransloaditTemplatesPath = @"/templates";
 static NSString * const kTransloaditTemplatesDetailPath = @"/templates/%@";
+static int kTransloaditPageLimit = 5000;
 
 @interface TLClient ()
 @property (nonatomic, strong) NSString *key;
@@ -179,6 +180,42 @@ static NSString * const kTransloaditTemplatesDetailPath = @"/templates/%@";
     }];
 }
 
+- (RACSignal*)getTemplatesFromPage:(int)page pageLimit:(int)pageLimit
+{
+    __block int currentPage = page;
+    RACSignal* (^nextSignal)() = ^RACSignal*() {
+        RACSignal *signal = [self rac_getTemplatesSortedBy:nil order:TLOrderAscendent page:currentPage pageSize:pageLimit fromDate:nil toDate:nil];
+        currentPage++;
+        return signal;
+    };
+    void (^ subscribeNext)(id<RACSubscriber>);
+    subscribeNext = ^void(id<RACSubscriber> subscriber) {
+        [nextSignal() subscribeNext:^(NSArray* templates) {
+            [subscriber sendNext:templates];
+            if (templates.count < pageLimit) {
+                [subscriber sendCompleted];
+            }
+            else {
+                subscribeNext(subscriber);
+            }
+        } error:^(NSError *error) {
+            [subscriber sendError:error];
+        }];
+    };
+    return [[RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+        subscribeNext(subscriber);
+        return nil;
+    }] combinePreviousWithStart:[NSMutableArray new] reduce:^NSMutableArray*(NSMutableArray *previous, NSArray *templates) {
+        [previous addObjectsFromArray:templates];
+        return previous;
+    }];
+}
+
+- (RACSignal*)getTemplatesFromPage
+{
+    return [self getTemplatesFromPage:0 pageLimit:kTransloaditPageLimit];
+}
+
 
 #pragma mark - Templates
 
@@ -220,8 +257,8 @@ static NSString * const kTransloaditTemplatesDetailPath = @"/templates/%@";
 
 - (void)getTemplatesWithCompletion:(void (^)(NSError *error, NSArray * templates))completion
 {
-    __block int pageLimit = 5000;
-    __block int currentPage = 0;
+    @weakify(self);
+   [[self rac_getTemplateDetailWithId:@"xxxxx"] then:<#^RACSignal *(void)block#>];
     
     
 }

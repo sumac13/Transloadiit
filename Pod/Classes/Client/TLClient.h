@@ -29,6 +29,7 @@ typedef NS_ENUM(NSUInteger, TLOrder) {
 - (RACSignal*)deleteTemplateWithId:(NSString*)identifier; // Error / Completion
 - (RACSignal*)rac_getTemplateDetailWithId:(NSString*)identifier; // TLTemplate / Error
 - (RACSignal*)rac_getTemplatesSortedBy:(NSString*)sorted order:(TLOrder)order page:(int)page pageSize:(int)pageSize fromDate:(NSDate*)from toDate:(NSDate*)to;
+- (RACSignal*)getTemplatesFromPage;
 
 // Blocks version
 - (void)createTemplateWithName:(NSString*)name template:(NSDictionary*)temp completion:(void (^)(NSError *error, TLTemplate* template))completion;
