@@ -34,5 +34,5 @@ Pod::Spec.new do |s|
   s.dependency 'AFNetworking', '~> 2.5'
   s.dependency 'ReactiveCocoa'
 
-  s.frameworks = 'CoreLocation'
+  s.frameworks = 'CoreLocation', 'CommonCrypto'
 end

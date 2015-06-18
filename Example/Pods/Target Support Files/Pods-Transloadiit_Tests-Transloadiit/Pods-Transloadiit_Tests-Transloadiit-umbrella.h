@@ -2,6 +2,7 @@
 
 #import "TLClient.h"
 #import "NSDate+Transloadit.h"
+#import "NSString+JSON.h"
 #import "TLAudioMetadata.h"
 #import "TLAudioUpload.h"
 #import "TLImageMetadata.h"

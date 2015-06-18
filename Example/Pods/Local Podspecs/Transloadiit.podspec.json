@@ -30,5 +30,8 @@
 
     ]
   },
-  "frameworks": "CoreLocation"
+  "frameworks": [
+    "CoreLocation",
+    "CommonCrypto"
+  ]
 }

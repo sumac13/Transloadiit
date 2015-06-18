@@ -10,5 +10,10 @@
 
 @interface TLTemplate : NSObject
 
+@property (nonatomic, strong) NSString *identifier;
+@property (nonatomic, strong) NSString *content;
+@property (nonatomic, strong) NSString *name;
+
+- (id)initWithDictionary:(NSDictionary*)dictionary;
 
 @end
