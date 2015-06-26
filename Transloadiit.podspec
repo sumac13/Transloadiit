@@ -9,7 +9,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "Transloadiit"
-  s.version          = "0.1.0"
+  s.version          = "0.1.1"
   s.summary          = "A short description of Transloadiit."
   s.description      = <<-DESC
                        An optional longer description of Transloadiit
@@ -33,6 +33,5 @@ Pod::Spec.new do |s|
   }
   s.dependency 'AFNetworking', '~> 2.5'
   s.dependency 'ReactiveCocoa'
-
-  s.frameworks = 'CoreLocation', 'CommonCrypto'
+  s.dependency 'CommonCrypto', '~> 1.1'
 end
