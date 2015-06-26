@@ -9,7 +9,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "Transloadiit"
-  s.version          = "0.1.3"
+  s.version          = "0.1.4"
   s.summary          = "A short description of Transloadiit."
   s.description      = <<-DESC
                        An optional longer description of Transloadiit

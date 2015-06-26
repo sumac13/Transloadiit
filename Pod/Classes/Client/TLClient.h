@@ -35,7 +35,7 @@ typedef NS_ENUM(NSUInteger, TLType) {
 
 - (RACSignal*)rac_createTemplateWithName:(NSString*)name template:(NSDictionary*)temp; // TLTemplate / Errror
 - (RACSignal*)rac_updateTemplateWithId:(NSString*)identifier name:(NSString*)name template:(NSDictionary*)temp; // TLTemplate / Error
-- (RACSignal*)deleteTemplateWithId:(NSString*)identifier; // Error / Completion
+- (RACSignal*)rac_deleteTemplateWithId:(NSString*)identifier; // Error / Completion
 - (RACSignal*)rac_getTemplateDetailWithId:(NSString*)identifier; // TLTemplate / Error
 - (RACSignal*)rac_getTemplatesSortedBy:(NSString*)sorted order:(TLOrder)order page:(int)page pageSize:(int)pageSize fromDate:(NSDate*)from toDate:(NSDate*)to;
 - (RACSignal*)rac_getAllTemplates;
@@ -49,6 +49,8 @@ typedef NS_ENUM(NSUInteger, TLType) {
 - (RACSignal*)rac_getAllNotificationsOfType:(TLType)type;
 - (RACSignal*)rac_getAllNotificationsOfType:(TLType)type assemblyId:(NSString*)assemblyId;
 - (RACSignal*)rac_getNotificationsOfType:(TLType)type assemblyId:(NSString*)assemblyId page:(int)page pageSize:(int)pageSize;
+- (RACSignal*)rac_replayNotificationForAssemblyId:(NSString*)assemblyId;
+
 
 // Blocks version
 
@@ -69,5 +71,6 @@ typedef NS_ENUM(NSUInteger, TLType) {
 - (void)getAllNotificationsOfType:(TLType)type completion:(void (^)(NSError *error, NSArray *notifications))completion;
 - (void)getAllNotificationsOfType:(TLType)type assemblyId:(NSString*)assemblyId completion:(void (^)(NSError *error, NSArray *notifications))completion;
 - (void)getNotificationsOfType:(TLType)type assemblyId:(NSString*)assemblyId page:(int)page pageSize:(int)pageSize completion:(void (^)(NSError *error, NSArray *notifications))completion;
+- (void)replayNotificationForAssemblyId:(NSString*)assemblyId completion:(void (^)(NSError *error, NSDictionary *response))completion;
 
 @end

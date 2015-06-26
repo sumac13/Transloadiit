@@ -13,6 +13,7 @@
 #include <CommonCrypto/CommonHMAC.h>
 #import "NSString+JSON.h"
 
+static NSString * const kTransloaditNotificationsReplayPath = @"/assembly_notifications/%@/replay";
 static NSString * const kTransloaditNotificationsPath = @"/assembly_notifications";
 static NSString * const kTransloaditTemplatesPath = @"/templates";
 static NSString * const kTransloaditTemplatesDetailPath = @"/templates/%@";
@@ -293,6 +294,7 @@ static int kTransloaditPageLimit = 5000;
 
 - (RACSignal*)rac_getAssemblyWithId:(NSString*)identifier
 {
+    NSAssert(identifier != nil, @"The assembly id cannot be nil");
     @weakify(self);
     return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
         @strongify(self);
@@ -308,6 +310,7 @@ static int kTransloaditPageLimit = 5000;
 
 - (RACSignal*)rac_cancelAssemblyWithId:(NSString*)identifier
 {
+    NSAssert(identifier != nil, @"The assembly id cannot be nil");
     @weakify(self);
     return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
         @strongify(self);
@@ -328,6 +331,7 @@ static int kTransloaditPageLimit = 5000;
 
 - (RACSignal*)rac_getAllNotificationsOfType:(TLType)type assemblyId:(NSString*)assemblyId
 {
+    NSAssert(assemblyId != nil, @"The assembly id cannot be nil");
     @weakify(self);
     return [self paginatedSignalWithInitialPage:0 pageLimit:kTransloaditPageLimit requestSignal:^RACSignal *(int page) {
         @strongify(self);
@@ -337,6 +341,7 @@ static int kTransloaditPageLimit = 5000;
 
 - (RACSignal*)rac_getNotificationsOfType:(TLType)type assemblyId:(NSString*)assemblyId page:(int)page pageSize:(int)pageSize
 {
+    NSAssert(assemblyId != nil, @"The assembly id cannot be nil");
     @weakify(self);
     return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
         @strongify(self);
@@ -354,6 +359,22 @@ static int kTransloaditPageLimit = 5000;
             else {
                 [subscriber sendError:[NSError errorWithDomain:@"" code:-1 userInfo:nil]];
             }
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            [subscriber sendError:error];
+        }];
+        return nil;
+    }];
+}
+
+- (RACSignal*)rac_replayNotificationForAssemblyId:(NSString*)assemblyId
+{
+    NSAssert(assemblyId != nil, @"The assembly id cannot be nil");
+    @weakify(self);
+    return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+        @strongify(self);
+        [self.client POST:[NSString stringWithFormat:kTransloaditNotificationsReplayPath, assemblyId] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            [subscriber sendNext:responseObject];
+            [subscriber sendCompleted];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [subscriber sendError:error];
         }];
@@ -530,6 +551,16 @@ static int kTransloaditPageLimit = 5000;
     defend(completion);
     [[self rac_getNotificationsOfType:type assemblyId:assemblyId page:page pageSize:pageSize] subscribeNext:^(NSArray *notifications) {
         completion(nil, notifications);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
+}
+
+- (void)replayNotificationForAssemblyId:(NSString*)assemblyId completion:(void (^)(NSError *error, NSDictionary *response))completion
+{
+    defend(completion);
+    [[self rac_replayNotificationForAssemblyId:assemblyId] subscribeNext:^(NSDictionary *response) {
+        completion(nil, response);
     } error:^(NSError *error) {
         completion(error, nil);
     }];

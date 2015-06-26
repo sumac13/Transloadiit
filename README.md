@@ -62,6 +62,7 @@ pod "Transloadiit", :git => "https://github.com/pepibumur/transloadiit"
 - (RACSignal*)rac_getAllNotificationsOfType:(NSString*)type;
 - (RACSignal*)rac_getAllNotificationsOfType:(NSString*)type assemblyId:(NSString*)assemblyId;
 - (RACSignal*)rac_getNotificationsOfType:(NSString*)type assemblyId:(NSString*)assemblyId page:(int)page pageSize:(int)pageSize;
+- (RACSignal*)rac_replayNotificationForAssemblyId:(NSString*)assemblyId;
 
 // Blocks version
 
@@ -82,6 +83,7 @@ pod "Transloadiit", :git => "https://github.com/pepibumur/transloadiit"
 - (void)getAllNotificationsOfType:(TLType)type completion:(void (^)(NSError *error, NSArray *notifications))completion;
 - (void)getAllNotificationsOfType:(TLType)type assemblyId:(NSString*)assemblyId completion:(void (^)(NSError *error, NSArray *notifications))completion;
 - (void)getNotificationsOfType:(TLType)type assemblyId:(NSString*)assemblyId page:(int)page pageSize:(int)pageSize completion:(void (^)(NSError *error, NSArray *notifications))completion;
+- (void)replayNotificationForAssemblyId:(NSString*)assemblyId completion:(void (^)(NSError *error, NSDictionary *response))completion;
 ```
 
 ## Author
