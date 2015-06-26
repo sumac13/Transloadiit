@@ -346,10 +346,14 @@ static int kTransloaditPageLimit = 5000;
         parameters[@"pagesize"] = @(pageSize);
         if (type) parameters[@"type"] = [self typeStringFromType:type];
         if (assemblyId) parameters[@"assembly_id"] = assemblyId;
-    
         [self.client GET:kTransloaditNotificationsPath parameters:[self requestParamsWithParams:parameters] success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            [subscriber sendNext:responseObject];
-            [subscriber sendCompleted];
+            if ([responseObject isKindOfClass:[NSArray class]]) {
+                [subscriber sendNext:responseObject];
+                [subscriber sendCompleted];
+            }
+            else {
+                [subscriber sendError:[NSError errorWithDomain:@"" code:-1 userInfo:nil]];
+            }
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [subscriber sendError:error];
         }];
@@ -501,19 +505,34 @@ static int kTransloaditPageLimit = 5000;
     }];
 }
 
-- (void)getAllNotificationsOfType:(NSString*)type completion:(void (^)(NSError *error, TLResponse *response))completion
+- (void)getAllNotificationsOfType:(TLType)type completion:(void (^)(NSError *error, NSArray *notifications))completion
 {
-    
+    defend(completion);
+    [[self rac_getAllNotificationsOfType:type] subscribeNext:^(NSArray *notifications) {
+        completion(nil, notifications);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
 }
 
-- (void)getAllNotificationsOfType:(NSString*)type assemblyId:(NSString*)assemblyId
+- (void)getAllNotificationsOfType:(TLType)type assemblyId:(NSString*)assemblyId completion:(void (^)(NSError *error, NSArray *notifications))completion
 {
-
+    defend(completion);
+    [[self rac_getAllNotificationsOfType:type assemblyId:assemblyId] subscribeNext:^(NSArray *notifications) {
+        completion(nil, notifications);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
 }
 
-- (void)getNotificationsOfType:(NSString*)type assemblyId:(NSString*)assemblyId page:(int)page pageSize:(int)pageSize
+- (void)getNotificationsOfType:(TLType)type assemblyId:(NSString*)assemblyId page:(int)page pageSize:(int)pageSize completion:(void (^)(NSError *error, NSArray *notifications))completion
 {
-    
+    defend(completion);
+    [[self rac_getNotificationsOfType:type assemblyId:assemblyId page:page pageSize:pageSize] subscribeNext:^(NSArray *notifications) {
+        completion(nil, notifications);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
 }
 
 
