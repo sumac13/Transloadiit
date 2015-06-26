@@ -89,6 +89,7 @@ pod "Transloadiit", :git => "https://github.com/pepibumur/transloadiit"
 ## Author
 
 Pedro, pepibumur@gmail.com
+David, david@psychosity.net
 
 ## License
 
