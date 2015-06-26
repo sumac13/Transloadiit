@@ -61,8 +61,4 @@ typedef NS_ENUM(NSUInteger, TLOrder) {
 - (void)getAssemblyWithId:(NSString*)identifier completion:(void (^)(NSError *error, TLResponse * response))completion;
 - (void)cancelAssemblyWithId:(NSString*)identifier completion:(void (^)(NSError *error, TLResponse *response))completion;
 
-
-
-// TODO - Notifications
-
 @end
