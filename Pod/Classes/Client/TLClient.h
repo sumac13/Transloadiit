@@ -40,6 +40,9 @@ typedef NS_ENUM(NSUInteger, TLOrder) {
 - (RACSignal*)rac_createAssemblyWithData:(NSData*)data name:(NSString*)name templateId:(NSString*)templateId;
 - (RACSignal*)rac_getAssemblyWithId:(NSString*)identifier;
 - (RACSignal*)rac_cancelAssemblyWithId:(NSString*)identifier;
+- (RACSignal*)rac_getAllNotificationsOfType:(NSString*)type;
+- (RACSignal*)rac_getAllNotificationsOfType:(NSString*)type assemblyId:(NSString*)assemblyId;
+- (RACSignal*)rac_getNotificationsOfType:(NSString*)type assemblyId:(NSString*)assemblyId page:(int)page pageSize:(int)pageSize;
 
 // Blocks version
 

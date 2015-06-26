@@ -13,6 +13,7 @@
 #include <CommonCrypto/CommonHMAC.h>
 #import "NSString+JSON.h"
 
+static NSString * const kTransloaditNotificationsPath = @"/assembly_notifications";
 static NSString * const kTransloaditTemplatesPath = @"/templates";
 static NSString * const kTransloaditTemplatesDetailPath = @"/templates/%@";
 static NSString * const kTransloaditAssembliesPath = @"/assemblies";
@@ -236,7 +237,6 @@ static int kTransloaditPageLimit = 5000;
                     return [[TLResponse alloc] initWithDictionary:dict];
                 }].array];
                 [subscriber sendCompleted];
-                [subscriber sendCompleted];
             }
             else {
                 [subscriber sendError:[NSError errorWithDomain:@"format.unrecognized" code:-1 userInfo:nil]];
@@ -265,13 +265,7 @@ static int kTransloaditPageLimit = 5000;
     void (^checkStatus)(TLResponse*, id<RACSubscriber>);
     checkStatus = ^void(TLResponse* response, id<RACSubscriber> subscriber) {
         @strongify(self);
-        if (response.status == TLResponseStatusAssemblyCanceled) {
-            [subscriber sendError:[NSError errorWithDomain:@"transloadit.cancelled" code:-1 userInfo:nil]];
-        }
-        else if (response.status == TLResponseStatusRequestAborted) {
-            [subscriber sendError:[NSError errorWithDomain:@"transloadit.aborted" code:-1 userInfo:nil]];
-        }
-        else if (response.status == TLResponseStatusAssemblyExecuting ||
+        if (response.status == TLResponseStatusAssemblyExecuting ||
                  response.status == TLResponseStatusAssemblyUploading) {
             [[self rac_getAssemblyWithId:response.assemblyId] subscribeNext:^(TLResponse *response) {
                 checkStatus(response, subscriber);
@@ -279,12 +273,9 @@ static int kTransloaditPageLimit = 5000;
                 [subscriber sendError:nil];
             }];
         }
-        else if (response.status == TLResponseStatusAssemblyCompleted) {
+        else {
             [subscriber sendNext:response];
             [subscriber sendCompleted];
-        }
-        else {
-            [subscriber sendError:[NSError errorWithDomain:@"transloadit.unknown" code:-1 userInfo:nil]];
         }
     };
     return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
@@ -330,6 +321,41 @@ static int kTransloaditPageLimit = 5000;
     }];
 }
 
+- (RACSignal*)rac_getAllNotificationsOfType:(NSString*)type
+{
+    return [self rac_getAllNotificationsOfType:type assemblyId:nil];
+}
+
+- (RACSignal*)rac_getAllNotificationsOfType:(NSString*)type assemblyId:(NSString*)assemblyId
+{
+    @weakify(self);
+    return [self paginatedSignalWithInitialPage:0 pageLimit:kTransloaditPageLimit requestSignal:^RACSignal *(int page) {
+        @strongify(self);
+        return [self rac_getNotificationsOfType:type assemblyId:assemblyId page:page pageSize:kTransloaditPageLimit];
+    }];
+}
+
+- (RACSignal*)rac_getNotificationsOfType:(NSString*)type assemblyId:(NSString*)assemblyId page:(int)page pageSize:(int)pageSize
+{
+    @weakify(self);
+    return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+        @strongify(self);
+        
+        NSMutableDictionary *parameters = [NSMutableDictionary new];
+        parameters[@"page"] = @(page);
+        parameters[@"pagesize"] = @(pageSize);
+        if (type) parameters[@"type"] = type;
+        if (assemblyId) parameters[@"assembly_id"] = assemblyId;
+    
+        [self.client GET:kTransloaditNotificationsPath parameters:[self requestParamsWithParams:parameters] success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            [subscriber sendNext:responseObject];
+            [subscriber sendCompleted];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            [subscriber sendError:error];
+        }];
+        return nil;
+    }];
+}
 
 
 #pragma mark - Blocks
@@ -473,6 +499,21 @@ static int kTransloaditPageLimit = 5000;
     } error:^(NSError *error) {
         completion(error, nil);
     }];
+}
+
+- (void)getAllNotificationsOfType:(NSString*)type completion:(void (^)(NSError *error, TLResponse *response))completion
+{
+    
+}
+
+- (void)getAllNotificationsOfType:(NSString*)type assemblyId:(NSString*)assemblyId
+{
+
+}
+
+- (void)getNotificationsOfType:(NSString*)type assemblyId:(NSString*)assemblyId page:(int)page pageSize:(int)pageSize
+{
+    
 }
 
 
