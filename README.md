@@ -29,7 +29,21 @@ pod "Transloadiit", :git => "https://github.com/pepibumur/transloadiit"
 - Input/Output defined models
 - Actively maintained
 
-## Interface
+## Technical details
+
+### Models
+
+```objc
+@interface TLUpload : NSObject @end
+@interface TLAudioUpload : NSObject @end
+@interface TLAudioMetadata : NSObject @end
+@interface TLImageUpload : NSObject @end
+@interface TLImageMetadata : NSObject @end
+@interface TLVideoUpload : NSObject @end
+@interface TLVideoMetadata : NSObject @end
+```
+
+### Client interface
 
 ```objc
 - (RACSignal*)rac_createTemplateWithName:(NSString*)name template:(NSDictionary*)temp; // TLTemplate / Errror
