@@ -1,5 +1,7 @@
 # Transloadiit
 
+![image](https://transloadit.com/img/robots/240x240/s3-store.jpg)
+
 [![CI Status](http://img.shields.io/travis/Pedro/Transloadiit.svg?style=flat)](https://travis-ci.org/Pedro/Transloadiit)
 [![Version](https://img.shields.io/cocoapods/v/Transloadiit.svg?style=flat)](http://cocoapods.org/pods/Transloadiit)
 [![License](https://img.shields.io/cocoapods/l/Transloadiit.svg?style=flat)](http://cocoapods.org/pods/Transloadiit)
@@ -17,7 +19,7 @@ Transloadiit is available through [CocoaPods](http://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod "Transloadiit"
+pod "Transloadiit", :git => "https://github.com/pepibumur/transloadiit"
 ```
 
 ## Author
