@@ -18,7 +18,7 @@ static NSString * const kTransloaditNotificationsPath = @"/assembly_notification
 static NSString * const kTransloaditTemplatesPath = @"/templates";
 static NSString * const kTransloaditTemplatesDetailPath = @"/templates/%@";
 static NSString * const kTransloaditAssembliesPath = @"/assemblies";
-static NSString * const kTransloaditAssembliesDetailPath = @"/assemblies/%";
+static NSString * const kTransloaditAssembliesDetailPath = @"/assemblies/%@";
 static int kTransloaditPageLimit = 5000;
 
 @interface TLClient ()
@@ -66,9 +66,19 @@ static int kTransloaditPageLimit = 5000;
     else {
         mutableParams[@"auth"] = @{ @"key": self.key };
     }
-    requestParams[@"params"] =  [NSString jsonStringFromDictionary:params];
+    
+    // Parameters should be JSON encoded
+    // TODO: - Make this neater
+    NSError *JSONEncodingError = nil;
+    NSData *JSONData = [NSJSONSerialization dataWithJSONObject:mutableParams options:NSJSONWritingPrettyPrinted error:&JSONEncodingError];
+    if (JSONEncodingError) {
+        NSLog(@"Error encoding JSON");
+    }
+    
+    requestParams[@"params"] = [[NSString alloc] initWithData:JSONData encoding:NSUTF8StringEncoding];
+    
     if (self.useSignature) {
-        NSString *signature = [self hashOfData:[NSString jsonStringFromDictionary:params] withKey:self.secret];
+        NSString *signature = [self hashOfData:[NSString jsonStringFromDictionary:mutableParams] withKey:self.secret];
         requestParams[@"signature"] = signature;
     }
     return requestParams;
@@ -262,8 +272,7 @@ static int kTransloaditPageLimit = 5000;
 - (RACSignal*)rac_createAssemblyWithData:(NSData*)data name:(NSString*)name params:(NSDictionary*)params
 {
     @weakify(self);
-    
-    void (^checkStatus)(TLResponse*, id<RACSubscriber>);
+    __block void (^checkStatus)(TLResponse*, id<RACSubscriber>);
     checkStatus = ^void(TLResponse* response, id<RACSubscriber> subscriber) {
         @strongify(self);
         if (response.status == TLResponseStatusAssemblyExecuting ||
@@ -281,8 +290,9 @@ static int kTransloaditPageLimit = 5000;
     };
     return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
         @strongify(self);
-        [self.client POST:kTransloaditTemplatesPath parameters:[self requestParamsWithParams:params]  constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-            [formData appendPartWithFormData:data name:name];
+        
+        [self.client POST:kTransloaditAssembliesPath parameters:[self requestParamsWithParams:params] constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+            [formData appendPartWithFileData:data name:@"upload_1" fileName:name mimeType:@"image/jpeg"];
         } success:^(AFHTTPRequestOperation *operation, id responseObject) {
             checkStatus([[TLResponse alloc] initWithDictionary:responseObject], subscriber);
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -298,7 +308,7 @@ static int kTransloaditPageLimit = 5000;
     @weakify(self);
     return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
         @strongify(self);
-        [self.client GET:[NSString stringWithFormat:kTransloaditTemplatesDetailPath, identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [self.client GET:[NSString stringWithFormat:kTransloaditAssembliesDetailPath, identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             [subscriber sendNext:[[TLResponse alloc] initWithDictionary:responseObject]];
             [subscriber sendCompleted];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
