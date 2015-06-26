@@ -201,10 +201,10 @@ static int kTransloaditPageLimit = 5000;
 
 - (RACSignal*)rac_getAllAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords
 {
-    return [self rac_getAllAssembliesWithType:type keyword:keywords fromPage:0 pageLimit:kTransloaditPageLimit];
+    return [self rac_getAllAssembliesWithType:type keywords:keywords fromPage:0 pageLimit:kTransloaditPageLimit];
 }
 
-- (RACSignal*)rac_getAllAssembliesWithType:(NSArray*)type keyword:(NSArray*)keywords fromPage:(int)page pageLimit:(int)pageLimit
+- (RACSignal*)rac_getAllAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords fromPage:(int)page pageLimit:(int)pageLimit
 {
     @weakify(self);
     return [self paginatedSignalWithInitialPage:0 pageLimit:kTransloaditPageLimit requestSignal:^RACSignal *(int page) {
@@ -280,6 +280,7 @@ static int kTransloaditPageLimit = 5000;
             }];
         }
         else if (response.status == TLResponseStatusAssemblyCompleted) {
+            [subscriber sendNext:response];
             [subscriber sendCompleted];
         }
         else {
@@ -393,29 +394,85 @@ static int kTransloaditPageLimit = 5000;
     }];
 }
 
-- (void)getAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords completion:(void (^)(NSError *error, NSArray * templates))completion
+
+- (void)getAllAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords completion:(void (^)(NSError *error, NSArray * assemblies))completion
 {
-    
+    defend(completion);
+    [[self rac_getAllAssembliesWithType:type keywords:keywords] subscribeNext:^(NSArray *assemblies) {
+        completion(nil, assemblies);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
 }
 
-- (void)getAllAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords page:(int)page pageSize:(int)pageSize fromDate:(NSDate*)from toDate:(NSDate*)to completion:(void (^)(NSError *error, NSArray * templates))completion
+- (void)getAllAssembliesWithType:(NSArray*)type keyword:(NSArray*)keywords fromPage:(int)page pageLimit:(int)pageLimit completion:(void (^)(NSError *error, NSArray * assemblies))completion
 {
-    
+    defend(completion);
+    [[self rac_getAllAssembliesWithType:type keywords:keywords fromPage:page pageLimit:pageLimit] subscribeNext:^(NSArray *assemblies) {
+        completion(nil, assemblies);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
 }
 
-- (void)getAssemblyWithUrl:(NSString*)assemblyUrl completion:(void (^)(NSError *error, id responseObject))completion
+- (void)getAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords page:(int)page pageSize:(int)pageSize fromDate:(NSDate*)from toDate:(NSDate*)to completion:(void (^)(NSError *error, NSArray * assemblies))completion
 {
-    
+    defend(completion);
+    [[self rac_getAssembliesWithType:type keywords:keywords page:page pageSize:pageSize fromDate:from toDate:to] subscribeNext:^(NSArray *assemblies) {
+        completion(nil, assemblies);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
 }
 
-- (void)createAssemblyWithData:(NSData*)data templateId:(NSString*)templateId progrress:(void (^)(CGFloat progress))progress completion:(void (^)(NSError *error, id responseObject))completion
+- (void)createAssemblyWithData:(NSData*)data name:(NSString*)name steps:(NSDictionary*)steps notifyUrl:(NSString*)notifyUrl completion:(void (^)(NSError *error, TLResponse * response))completion
 {
-    
+    defend(completion);
+    [[self rac_createAssemblyWithData:data name:name steps:steps notifyUrl:notifyUrl] subscribeNext:^(TLResponse *response) {
+        completion(nil, response);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
 }
 
-- (void)createAssemblyWithData:(NSData*)data steps:(NSDictionary*)steps progrress:(void (^)(CGFloat progress))progress completion:(void (^)(NSError *error, id responseObject))completion
+- (void)createAssemblyWithData:(NSData*)data name:(NSString*)name templateId:(NSString*)templateId completion:(void (^)(NSError *error, TLResponse * response))completion
 {
-    
+    defend(completion);
+    [[self rac_createAssemblyWithData:data name:name templateId:templateId] subscribeNext:^(TLResponse *response) {
+        completion(nil, response);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
+}
+
+- (void)createAssemblyWithData:(NSData*)data name:(NSString*)name params:(NSDictionary*)params completion:(void (^)(NSError *error, TLResponse * response))completion
+{
+    defend(completion);
+    [[self rac_createAssemblyWithData:data name:name params:params] subscribeNext:^(TLResponse *response) {
+        completion(nil, response);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
+}
+
+- (void)getAssemblyWithId:(NSString*)identifier completion:(void (^)(NSError *error, TLResponse * response))completion
+{
+    defend(completion);
+    [[self rac_getAssemblyWithId:identifier] subscribeNext:^(TLResponse *response) {
+        completion(nil, response);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
+}
+
+- (void)cancelAssemblyWithId:(NSString*)identifier completion:(void (^)(NSError *error, TLResponse *response))completion
+{
+    defend(completion);
+    [[self rac_cancelAssemblyWithId:identifier] subscribeNext:^(TLResponse *response) {
+        completion(nil, response);
+    } error:^(NSError *error) {
+        completion(error, nil);
+    }];
 }
 
 
