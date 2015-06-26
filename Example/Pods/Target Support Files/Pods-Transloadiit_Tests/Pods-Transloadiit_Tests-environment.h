@@ -48,6 +48,12 @@
 #define COCOAPODS_VERSION_MINOR_AFNetworking_UIKit 5
 #define COCOAPODS_VERSION_PATCH_AFNetworking_UIKit 4
 
+// CommonCrypto
+#define COCOAPODS_POD_AVAILABLE_CommonCrypto
+#define COCOAPODS_VERSION_MAJOR_CommonCrypto 1
+#define COCOAPODS_VERSION_MINOR_CommonCrypto 1
+#define COCOAPODS_VERSION_PATCH_CommonCrypto 0
+
 // Expecta
 #define COCOAPODS_POD_AVAILABLE_Expecta
 #define COCOAPODS_VERSION_MAJOR_Expecta 1
@@ -88,5 +94,5 @@
 #define COCOAPODS_POD_AVAILABLE_Transloadiit
 #define COCOAPODS_VERSION_MAJOR_Transloadiit 0
 #define COCOAPODS_VERSION_MINOR_Transloadiit 1
-#define COCOAPODS_VERSION_PATCH_Transloadiit 0
+#define COCOAPODS_VERSION_PATCH_Transloadiit 3
 

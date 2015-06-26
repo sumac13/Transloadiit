@@ -1,0 +1,6 @@
+framework module CommonCrypto {
+  umbrella header "Pods-Transloadiit_Tests-CommonCrypto-umbrella.h"
+
+  export *
+  module * { export * }
+}

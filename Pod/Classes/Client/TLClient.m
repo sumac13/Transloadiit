@@ -321,12 +321,12 @@ static int kTransloaditPageLimit = 5000;
     }];
 }
 
-- (RACSignal*)rac_getAllNotificationsOfType:(NSString*)type
+- (RACSignal*)rac_getAllNotificationsOfType:(TLType)type
 {
     return [self rac_getAllNotificationsOfType:type assemblyId:nil];
 }
 
-- (RACSignal*)rac_getAllNotificationsOfType:(NSString*)type assemblyId:(NSString*)assemblyId
+- (RACSignal*)rac_getAllNotificationsOfType:(TLType)type assemblyId:(NSString*)assemblyId
 {
     @weakify(self);
     return [self paginatedSignalWithInitialPage:0 pageLimit:kTransloaditPageLimit requestSignal:^RACSignal *(int page) {
@@ -335,7 +335,7 @@ static int kTransloaditPageLimit = 5000;
     }];
 }
 
-- (RACSignal*)rac_getNotificationsOfType:(NSString*)type assemblyId:(NSString*)assemblyId page:(int)page pageSize:(int)pageSize
+- (RACSignal*)rac_getNotificationsOfType:(TLType)type assemblyId:(NSString*)assemblyId page:(int)page pageSize:(int)pageSize
 {
     @weakify(self);
     return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
@@ -344,7 +344,7 @@ static int kTransloaditPageLimit = 5000;
         NSMutableDictionary *parameters = [NSMutableDictionary new];
         parameters[@"page"] = @(page);
         parameters[@"pagesize"] = @(pageSize);
-        if (type) parameters[@"type"] = type;
+        if (type) parameters[@"type"] = [self typeStringFromType:type];
         if (assemblyId) parameters[@"assembly_id"] = assemblyId;
     
         [self.client GET:kTransloaditNotificationsPath parameters:[self requestParamsWithParams:parameters] success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -562,6 +562,20 @@ static int kTransloaditPageLimit = 5000;
         [output appendFormat:@"%02x", cHMAC[i]];
     hash = output;
     return hash;
+}
+
+- (NSString*)typeStringFromType:(TLType)type
+{
+    switch (type) {
+        case TLTypeAll:
+            return @"all";
+        case TLTypeFailed:
+            return @"failed";
+        case TLTypeSuccessful:
+            return @"successful";
+        default:
+            return @"all";
+    }
 }
 
 

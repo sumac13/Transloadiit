@@ -20,6 +20,7 @@ PODS:
   - AFNetworking/UIKit (2.5.4):
     - AFNetworking/NSURLConnection
     - AFNetworking/NSURLSession
+  - CommonCrypto (1.1)
   - Expecta (1.0.0)
   - ReactiveCocoa (2.5):
     - ReactiveCocoa/UI (= 2.5)
@@ -29,8 +30,9 @@ PODS:
   - ReactiveCocoa/UI (2.5):
     - ReactiveCocoa/Core
   - Specta (1.0.2)
-  - Transloadiit (0.1.0):
+  - Transloadiit (0.1.3):
     - AFNetworking (~> 2.5)
+    - CommonCrypto (~> 1.1)
     - ReactiveCocoa
 
 DEPENDENCIES:
@@ -44,9 +46,10 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   AFNetworking: 05edc0ac4c4c8cf57bcf4b84be5b0744b6d8e71e
+  CommonCrypto: e18c8416332cca5efe80c197f2a522d471c42626
   Expecta: 32604574add2c46a36f8d2f716b6c5736eb75024
   ReactiveCocoa: e2db045570aa97c695e7aa97c2bcab222ae51f4a
   Specta: 9cec98310dca411f7c7ffd6943552b501622abfe
-  Transloadiit: 6090f9aaf5a5ff9cbe35b8b27c263ee3caad6a17
+  Transloadiit: 67dc28440b77e93f13bd92d97928160821fa3d98
 
 COCOAPODS: 0.37.2

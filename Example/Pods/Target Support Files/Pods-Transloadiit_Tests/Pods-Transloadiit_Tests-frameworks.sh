@@ -49,6 +49,7 @@ code_sign() {
 
 if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_framework 'AFNetworking.framework'
+  install_framework 'CommonCrypto.framework'
   install_framework 'Expecta.framework'
   install_framework 'ReactiveCocoa.framework'
   install_framework 'Specta.framework'
@@ -56,6 +57,7 @@ if [[ "$CONFIGURATION" == "Debug" ]]; then
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework 'AFNetworking.framework'
+  install_framework 'CommonCrypto.framework'
   install_framework 'Expecta.framework'
   install_framework 'ReactiveCocoa.framework'
   install_framework 'Specta.framework'
