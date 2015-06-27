@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "AE5559674D2C523B1BA6AE8E"
+               BlueprintIdentifier = "EED5B9F4E38CDE99B74FAE72"
                BuildableName = "Transloadiit.framework"
                BlueprintName = "Pods-Transloadiit_Tests-Transloadiit"
                ReferencedContainer = "container:Pods.xcodeproj">

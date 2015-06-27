@@ -259,17 +259,17 @@ static int kTransloaditPageLimit = 5000;
     }];
 }
 
-- (RACSignal*)rac_createAssemblyWithData:(NSData*)data name:(NSString*)name steps:(NSDictionary*)steps notifyUrl:(NSString*)notifyUrl
+- (RACSignal*)rac_createAssemblyWithData:(NSData*)data mimeType:(NSString*)mimeType name:(NSString*)name steps:(NSDictionary*)steps notifyUrl:(NSString*)notifyUrl
 {
-    return [self rac_createAssemblyWithData:data name:name params:@{@"steps": [NSString jsonStringFromDictionary:steps]}];
+    return [self rac_createAssemblyWithData:data mimeType:mimeType name:name params:@{@"steps": [NSString jsonStringFromDictionary:steps]}];
 }
 
-- (RACSignal*)rac_createAssemblyWithData:(NSData*)data name:(NSString*)name templateId:(NSString*)templateId
+- (RACSignal*)rac_createAssemblyWithData:(NSData*)data mimeType:mimeType name:(NSString*)name templateId:(NSString*)templateId
 {
-    return [self rac_createAssemblyWithData:data name:name params:@{@"template_id": templateId}];
+    return [self rac_createAssemblyWithData:data mimeType:mimeType name:name params:@{@"template_id": templateId}];
 }
 
-- (RACSignal*)rac_createAssemblyWithData:(NSData*)data name:(NSString*)name params:(NSDictionary*)params
+- (RACSignal*)rac_createAssemblyWithData:(NSData*)data mimeType:(NSString*)mimeType name:(NSString*)name params:(NSDictionary*)params
 {
     @weakify(self);
     __block void (^checkStatus)(TLResponse*, id<RACSubscriber>);
@@ -277,11 +277,15 @@ static int kTransloaditPageLimit = 5000;
         @strongify(self);
         if (response.status == TLResponseStatusAssemblyExecuting ||
                  response.status == TLResponseStatusAssemblyUploading) {
-            [[self rac_getAssemblyWithId:response.assemblyId] subscribeNext:^(TLResponse *response) {
-                checkStatus(response, subscriber);
-            } error:^(NSError *error) {
-                [subscriber sendError:nil];
-            }];
+            @weakify(self);
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                @strongify(self);
+                [[self rac_getAssemblyWithId:response.assemblyId] subscribeNext:^(TLResponse *response) {
+                    checkStatus(response, subscriber);
+                } error:^(NSError *error) {
+                    [subscriber sendError:error];
+                }];
+            });
         }
         else {
             [subscriber sendNext:response];
@@ -292,7 +296,7 @@ static int kTransloaditPageLimit = 5000;
         @strongify(self);
         
         [self.client POST:kTransloaditAssembliesPath parameters:[self requestParamsWithParams:params] constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-            [formData appendPartWithFileData:data name:@"upload_1" fileName:name mimeType:@"image/jpeg"];
+            [formData appendPartWithFileData:data name:@"upload_1" fileName:name mimeType:mimeType];
         } success:^(AFHTTPRequestOperation *operation, id responseObject) {
             checkStatus([[TLResponse alloc] initWithDictionary:responseObject], subscriber);
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -486,30 +490,30 @@ static int kTransloaditPageLimit = 5000;
     }];
 }
 
-- (void)createAssemblyWithData:(NSData*)data name:(NSString*)name steps:(NSDictionary*)steps notifyUrl:(NSString*)notifyUrl completion:(void (^)(NSError *error, TLResponse * response))completion
+- (void)createAssemblyWithData:(NSData*)data mimeType:(NSString*)mimeType name:(NSString*)name steps:(NSDictionary*)steps notifyUrl:(NSString*)notifyUrl completion:(void (^)(NSError *error, TLResponse * response))completion
 {
     defend(completion);
-    [[self rac_createAssemblyWithData:data name:name steps:steps notifyUrl:notifyUrl] subscribeNext:^(TLResponse *response) {
+    [[self rac_createAssemblyWithData:data mimeType:mimeType name:name  steps:steps notifyUrl:notifyUrl] subscribeNext:^(TLResponse *response) {
         completion(nil, response);
     } error:^(NSError *error) {
         completion(error, nil);
     }];
 }
 
-- (void)createAssemblyWithData:(NSData*)data name:(NSString*)name templateId:(NSString*)templateId completion:(void (^)(NSError *error, TLResponse * response))completion
+- (void)createAssemblyWithData:(NSData*)data mimeType:(NSString*)mimeType name:(NSString*)name  templateId:(NSString*)templateId completion:(void (^)(NSError *error, TLResponse * response))completion
 {
     defend(completion);
-    [[self rac_createAssemblyWithData:data name:name templateId:templateId] subscribeNext:^(TLResponse *response) {
+    [[self rac_createAssemblyWithData:data mimeType:mimeType name:name templateId:templateId] subscribeNext:^(TLResponse *response) {
         completion(nil, response);
     } error:^(NSError *error) {
         completion(error, nil);
     }];
 }
 
-- (void)createAssemblyWithData:(NSData*)data name:(NSString*)name params:(NSDictionary*)params completion:(void (^)(NSError *error, TLResponse * response))completion
+- (void)createAssemblyWithData:(NSData*)data  mimeType:(NSString*)mimeType name:(NSString*)name params:(NSDictionary*)params completion:(void (^)(NSError *error, TLResponse * response))completion
 {
     defend(completion);
-    [[self rac_createAssemblyWithData:data name:name params:params] subscribeNext:^(TLResponse *response) {
+    [[self rac_createAssemblyWithData:data mimeType:mimeType name:name params:params] subscribeNext:^(TLResponse *response) {
         completion(nil, response);
     } error:^(NSError *error) {
         completion(error, nil);

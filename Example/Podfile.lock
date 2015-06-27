@@ -30,7 +30,7 @@ PODS:
   - ReactiveCocoa/UI (2.5):
     - ReactiveCocoa/Core
   - Specta (1.0.2)
-  - Transloadiit (0.1.5):
+  - Transloadiit (0.1.6):
     - AFNetworking (~> 2.5)
     - CommonCrypto (~> 1.1)
     - ReactiveCocoa
@@ -50,6 +50,6 @@ SPEC CHECKSUMS:
   Expecta: 32604574add2c46a36f8d2f716b6c5736eb75024
   ReactiveCocoa: e2db045570aa97c695e7aa97c2bcab222ae51f4a
   Specta: 9cec98310dca411f7c7ffd6943552b501622abfe
-  Transloadiit: 32189ffc0ceba274a4eb4f526639c37bfd3690d8
+  Transloadiit: 01e87eb1c93ebcd0f9efb1038310a51284351f8e
 
 COCOAPODS: 0.37.2

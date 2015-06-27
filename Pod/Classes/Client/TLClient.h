@@ -42,8 +42,8 @@ typedef NS_ENUM(NSUInteger, TLType) {
 - (RACSignal*)rac_getAllAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords;
 - (RACSignal*)rac_getAllAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords fromPage:(int)page pageLimit:(int)pageLimit;
 - (RACSignal*)rac_getAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords page:(int)page pageSize:(int)pageSize fromDate:(NSDate*)from toDate:(NSDate*)to;
-- (RACSignal*)rac_createAssemblyWithData:(NSData*)data name:(NSString*)name steps:(NSDictionary*)steps notifyUrl:(NSString*)notifyUrl;
-- (RACSignal*)rac_createAssemblyWithData:(NSData*)data name:(NSString*)name templateId:(NSString*)templateId;
+- (RACSignal*)rac_createAssemblyWithData:(NSData*)data mimeType:(NSString*)mimeType name:(NSString*)name steps:(NSDictionary*)steps notifyUrl:(NSString*)notifyUrl;
+- (RACSignal*)rac_createAssemblyWithData:(NSData*)data mimeType:(NSString*)mimeType name:(NSString*)name  templateId:(NSString*)templateId;
 - (RACSignal*)rac_getAssemblyWithId:(NSString*)identifier;
 - (RACSignal*)rac_cancelAssemblyWithId:(NSString*)identifier;
 - (RACSignal*)rac_getAllNotificationsOfType:(TLType)type;
@@ -64,8 +64,8 @@ typedef NS_ENUM(NSUInteger, TLType) {
 - (void)getAllAssembliesWithType:(NSArray*)type keyword:(NSArray*)keywords fromPage:(int)page pageLimit:(int)pageLimit completion:(void (^)(NSError *error, NSArray * assemblies))completion;
 - (void)getAssembliesWithType:(NSArray*)type keywords:(NSArray*)keywords page:(int)page pageSize:(int)pageSize fromDate:(NSDate*)from toDate:(NSDate*)to completion:(void (^)(NSError *error, NSArray * assemblies))completion;
 - (void)createAssemblyWithData:(NSData*)data name:(NSString*)name steps:(NSDictionary*)steps notifyUrl:(NSString*)notifyUrl completion:(void (^)(NSError *error, TLResponse * response))completion;
-- (void)createAssemblyWithData:(NSData*)data name:(NSString*)name templateId:(NSString*)templateId completion:(void (^)(NSError *error, TLResponse * response))completion;
-- (void)createAssemblyWithData:(NSData*)data name:(NSString*)name params:(NSDictionary*)params completion:(void (^)(NSError *error, TLResponse * response))completion;
+- (void)createAssemblyWithData:(NSData*)data mimeType:(NSString*)mimeType name:(NSString*)name templateId:(NSString*)templateId completion:(void (^)(NSError *error, TLResponse * response))completion;
+- (void)createAssemblyWithData:(NSData*)data mimeType:(NSString*)mimeType name:(NSString*)name params:(NSDictionary*)params completion:(void (^)(NSError *error, TLResponse * response))completion;
 - (void)getAssemblyWithId:(NSString*)identifier completion:(void (^)(NSError *error, TLResponse * response))completion;
 - (void)cancelAssemblyWithId:(NSString*)identifier completion:(void (^)(NSError *error, TLResponse *response))completion;
 - (void)getAllNotificationsOfType:(TLType)type completion:(void (^)(NSError *error, NSArray *notifications))completion;
