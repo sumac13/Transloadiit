@@ -32,6 +32,6 @@ Pod::Spec.new do |s|
     'Transloadiit' => ['Pod/Assets/*.png']
   }
   s.dependency 'AFNetworking', '~> 2.5'
-  s.dependency 'ReactiveObjC’
+  s.dependency 'ReactiveObjC'
   s.dependency 'CommonCrypto', '~> 1.1'
 end
